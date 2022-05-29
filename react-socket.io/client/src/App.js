@@ -6,9 +6,18 @@ import { io } from "socket.io-client"
 function App() {
   const [username, setUsername] = React.useState("");
   const [user, setUser] = React.useState("");
+  const [socket, setSocket] = React.useState(null);
   React.useEffect(() => {
-    const socket = io("http://localhost:5000")
+    setSocket(io("http://localhost:5000"));
+    // console.log(socket);
+    // console.log(socket.on("firstEvent", (msg) => {
+    //   console.log(msg)
+    // }))
   }, [])
+
+  React.useEffect(() => {
+    socket?.emit("newUser", user)
+  }, [socket, user])
   const handleLogin = () => {
     setUser(username);
   };
@@ -17,9 +26,9 @@ function App() {
     <div className="container">
       {user ? (
         <>
-          <Navbar />
+          <Navbar socket={socket}/>
           {posts.map((post) => (
-            <Card key={post.id} post={post} user={user}/>
+            <Card key={post.id} post={post} user={user} socket={socket}/>
           ))}
           <span className="username">{username}</span>
         </>

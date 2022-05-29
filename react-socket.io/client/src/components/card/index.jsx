@@ -5,10 +5,41 @@ import HeartFilled from "../../img/heartFilled.svg";
 import Comment from "../../img/comment.svg";
 import Share from "../../img/share.svg";
 import Info from "../../img/info.svg";
-const Card = ({ post }) => {
+const Card = ({ post, socket, user }) => {
   const [liked, setLiked] = React.useState(false);
-  const handleLiked = () => {
-    setLiked(!liked);
+  const handleNotification = (type) => {
+    if (type === 1) {
+      setLiked(!liked);
+      if (!liked) {
+        socket.emit("sendNotification", {
+          senderName: user,
+          receiverName: post.username,
+          type
+        })
+      }
+    }
+    else if (type === 2) {
+      socket.emit("sendNotification", {
+        senderName: user,
+        receiverName: post.username,
+        type
+      })
+    }
+    else {
+      socket.emit("sendNotification", {
+        senderName: user,
+        receiverName: post.username,
+        type
+      })
+    }
+
+  }
+  const handleSendMesseges = () => {
+    socket.emit("sendMessage", {
+      senderName: user,
+      receiverName: post.username,
+      message: "Xin chao cac ban"
+    })
   }
   return (
     <div className="card">
@@ -19,11 +50,11 @@ const Card = ({ post }) => {
       <img src={post.postImg} alt="" className="postImg" />
       <div className="interaction">
         {
-          liked ? (<img src={HeartFilled} alt="" className="cardIcon" onClick={handleLiked}/>) : (<img src={Heart} alt="" className="cardIcon" onClick={handleLiked}/>)
+          liked ? (<img src={HeartFilled} alt="" className="cardIcon" onClick={() => handleNotification(1)} />) : (<img src={Heart} alt="" className="cardIcon" onClick={() => handleNotification(1)} />)
         }
-        <img src={Comment} alt="" className="cardIcon"/>
-        <img src={Share} alt="" className="cardIcon"/>
-        <img src={Info} alt="" className="cardIcon infoIcon"/>
+        <img src={Comment} alt="" className="cardIcon" onClick={() => handleNotification(2)} />
+        <img src={Share} alt="" className="cardIcon" onClick={() => handleNotification(3)} />
+        <img src={Info} alt="" className="cardIcon infoIcon" />
       </div>
     </div>
   )

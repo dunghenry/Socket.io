@@ -4,10 +4,39 @@ const io = new Server({
     origin: "http://localhost:3000",
   },
 });
+let onlineUsers = []
+const addNewUser = (username, socketId) => {
+  !onlineUsers.some(user => user.name === username) && onlineUsers.push({ username, socketId });
+}
+const removeUser = (socketId) => {
+  onlineUsers = onlineUsers.filter(user => user.socketId !== socketId)
+}
+
+const getUser = (username) => {
+  return onlineUsers.find(user => user.username === username);
+}
 io.on("connection", (socket) => {
-    console.log("Connected")
-    socket.on("disconnect", () => {
-        console.log("Disconnected")
+  console.log("Connected")
+  socket.on("newUser", (username) => {
+    addNewUser(username, socket.id)
+  })
+  socket.on("sendNotification", ({ senderName, receiverName, type }) => {
+    const receiver = getUser(receiverName);
+    io.to(receiver.socketId).emit("getNotification", {
+      senderName,
+      type,
     })
+  })
+  socket.on("sendMessage", ({ senderName, receiverName, message }) => {
+    const receiver = getUser(receiverName)
+    io.to(receiver.socketId).emit("getMessage", {
+      senderName,
+      message
+    })
+  } )
+  socket.on("disconnect", () => {
+    removeUser(socket.id)
+    console.log("Disconnected")
+  })
 });
 io.listen(5000);
